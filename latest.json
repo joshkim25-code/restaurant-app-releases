@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "releasedAt": "2026-09-23",
+  "notes": "First versioned release - table/order/billing management, reservations, AI phone reservations, receipt/kitchen-ticket printing, drag-and-drop menu editor, tip/discount/service-charge tracking.",
+  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.0.0.zip",
+  "sha256": "74CF864A72570EA12A1DC12BE10096AE48BEAF6CFA0CF646F53FB86A0F0BE17A",
+  "minLauncherVersion": "1.0.0"
+}
