@@ -1,8 +1,8 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "releasedAt": "2026-09-23",
-  "notes": "First versioned release - table/order/billing management, reservations, AI phone reservations, receipt/kitchen-ticket printing, drag-and-drop menu editor, tip/discount/service-charge tracking.",
-  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.0.0.zip",
-  "sha256": "74CF864A72570EA12A1DC12BE10096AE48BEAF6CFA0CF646F53FB86A0F0BE17A",
+  "notes": "New restaurants get their print agent token generated automatically during onboarding, plus a welcome banner explaining what's optional to finish setting up.",
+  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.1.0.zip",
+  "sha256": "5B194C3CAE5E420E30F14BC54E88B8CBF05255D0EB2E1DE54BFE7E28B97EFDEA",
   "minLauncherVersion": "1.0.0"
 }
