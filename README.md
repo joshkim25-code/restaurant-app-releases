@@ -27,14 +27,20 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.0.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.1.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.0.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.1.zip
 ```
-SHA256: `4A9A40B9059F00AB1B3DE69D578186C03C8501901F9E27BD4ED6322D189CF372`
+SHA256: `ADE5FF350BC84D9E549A454CA112C386BADC264B34B4AC7CD0E4994874E3F64C`
+
+**1.0.1** (2026-09-24): fixes the "Set up this machine" button sometimes not appearing on a
+freshly-provisioned machine (found during the first real test, on a second, genuinely blank
+Windows 10 device) — the button's position wasn't being recalculated at the moment it was
+actually shown, so on some machines it rendered off in an effectively invisible spot.
+`1.0.0` is kept below for reference; use `1.0.1`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
