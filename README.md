@@ -27,19 +27,29 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.2.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.3.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.2.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.3.zip
 ```
-SHA256: `1329A02CA879966231AE603CE0F57D5E4CE226D1512A094D90AE02D4368FD2DF`
+SHA256: `22A7939B1E323DA65631CA2B8931B67B4D91E70287045AC9F7471D436F8DE9BA`
 
-**1.0.2** (2026-09-24): fixes the "Set up this machine" button still not appearing after 1.0.1
+**1.0.3** (2026-09-24): fixes `provision-machine.ps1`'s fresh-install path failing with
+`psql: FATAL: password authentication failed for user "postgres"` — the randomly generated
+superuser/app passwords (Base64, could contain `+`/`/`/`=`) didn't always survive intact through
+the Postgres installer's own command-line argument parsing. Passwords generated for that path
+are now alphanumeric-only. **If you hit this exact error on 1.0.2 or earlier**: PostgreSQL was
+actually installed on your machine before the failure, just under a password nobody knows —
+uninstall it via Settings → Apps first (and delete `C:\Program Files\PostgreSQL` if anything's
+left over) before retrying with 1.0.3, so it gets a genuinely fresh install.
+
+**1.0.2** (2026-09-24): fixed the "Set up this machine" button still not appearing after 1.0.1
 on a real second Windows 10 device — turned out to be a z-order/paint-over issue (a Dock.Fill
-status label sitting over it), not just a position issue. `1.0.0`/`1.0.1` were both broken on
-this specific path and have been removed rather than kept for reference — use `1.0.2`.
+status label sitting over it), not just a position issue.
+
+`1.0.0`/`1.0.1`/`1.0.2` have been removed rather than kept for reference — use `1.0.3`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
