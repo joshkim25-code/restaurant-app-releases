@@ -27,20 +27,19 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.1.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.2.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.1.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.2.zip
 ```
-SHA256: `ADE5FF350BC84D9E549A454CA112C386BADC264B34B4AC7CD0E4994874E3F64C`
+SHA256: `1329A02CA879966231AE603CE0F57D5E4CE226D1512A094D90AE02D4368FD2DF`
 
-**1.0.1** (2026-09-24): fixes the "Set up this machine" button sometimes not appearing on a
-freshly-provisioned machine (found during the first real test, on a second, genuinely blank
-Windows 10 device) — the button's position wasn't being recalculated at the moment it was
-actually shown, so on some machines it rendered off in an effectively invisible spot.
-`1.0.0` is kept below for reference; use `1.0.1`.
+**1.0.2** (2026-09-24): fixes the "Set up this machine" button still not appearing after 1.0.1
+on a real second Windows 10 device — turned out to be a z-order/paint-over issue (a Dock.Fill
+status label sitting over it), not just a position issue. `1.0.0`/`1.0.1` were both broken on
+this specific path and have been removed rather than kept for reference — use `1.0.2`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
