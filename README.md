@@ -27,14 +27,25 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.9.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.10.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.9.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.10.zip
 ```
-SHA256: `223CCD9AFC92ACBC6DB712761404252677F2D77F1355DA884D0AB0F3AE8DC1D4`
+SHA256: `179766E6AFE09C6009EBA8488C578B8ADF824A545A04A4A06616F7A3FD00A373`
+
+**1.0.10** (2026-09-25): 1.0.9's dedicated-port fix (5433) wasn't the whole story on the same
+real device with an existing POS-owned PostgreSQL 17 install - the installer reported success
+but nothing ended up listening on 5433, because it detected the pre-existing PostgreSQL 17
+(left over from an earlier attempt before 1.0.9, same major version this script always
+installs) and didn't create a genuinely separate instance, even with a different `--serverport`.
+Standard PostgreSQL installers don't reliably support two side-by-side instances of the *same*
+major version. This app now installs **PostgreSQL 16** instead of 17 - a different major
+version installs as a fully independent instance (own directory, own service, own everything)
+regardless of what else is already on the machine, sidestepping the whole class of problem
+without needing to know or touch whatever else is there.
 
 **1.0.9** (2026-09-25): fixed a real port collision, found on a real device that already ran
 a POS system with its own separate PostgreSQL install. `provision-machine.ps1` previously
@@ -66,7 +77,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.8` have been removed rather than kept for reference — use `1.0.9`.
+`1.0.0` through `1.0.9` have been removed rather than kept for reference — use `1.0.10`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
