@@ -27,14 +27,25 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.8.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.9.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.8.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.9.zip
 ```
-SHA256: `0F166DF5BAA43AC9BA713AB2560F1FBCDE51DDA2EB971930394F0FA7EA3E6E4D`
+SHA256: `223CCD9AFC92ACBC6DB712761404252677F2D77F1355DA884D0AB0F3AE8DC1D4`
+
+**1.0.9** (2026-09-25): fixed a real port collision, found on a real device that already ran
+a POS system with its own separate PostgreSQL install. `provision-machine.ps1` previously
+always installed on Postgres's default port (5432) and only checked whether a service literally
+named `postgresql-x64-*` already existed before deciding to install fresh — a check that can't
+tell "we already set this up" apart from "something else entirely installed Postgres for its
+own reasons." This app's dedicated PostgreSQL instance now always installs on its own port
+(5433, not configurable via the UI, but a `-DbPort` script parameter) so it can never collide
+with anything else already on the machine, and the "already installed" check now looks at
+whether *that specific port* is already listening, not at service names, which multiple
+unrelated Postgres installs can share.
 
 **1.0.8** (2026-09-25): the `psql: FATAL: password authentication failed for user "postgres"`
 bug (thought fixed in 1.0.3) came back on a real device running 1.0.6. Root cause: 1.0.4's
@@ -55,7 +66,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.7` have been removed rather than kept for reference — use `1.0.8`.
+`1.0.0` through `1.0.8` have been removed rather than kept for reference — use `1.0.9`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
