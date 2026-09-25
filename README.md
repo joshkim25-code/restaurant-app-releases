@@ -27,14 +27,23 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.6.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.7.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.6.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.7.zip
 ```
-SHA256: `8966D56218E6DAFFE08C3431B00E8A5420615C7A6A6DA4770B372F7121B29170`
+SHA256: `DF82088C54C56AE4B8B01F644B87DEAD64C4FE01A7191F3F31D015B424E368A1`
+
+**1.0.7** (2026-09-25): a freshly-provisioned machine's generated `.env` defaulted
+`VOICE_PUBLIC_URL` to `http://localhost:3100` — silently broken on every fresh install, since
+voice now runs cloud-hosted (Railway) for every restaurant, not locally. Billing pages and the
+new auto-restore-on-login both depend on this being correct. `provision-machine.ps1` now bakes
+in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
+`CLOUD_DATABASE_URL`, which stays blank).
+
+`1.0.0` through `1.0.6` have been removed rather than kept for reference — use `1.0.7`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
