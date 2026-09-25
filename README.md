@@ -27,14 +27,26 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.7.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.8.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.7.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.8.zip
 ```
-SHA256: `DF82088C54C56AE4B8B01F644B87DEAD64C4FE01A7191F3F31D015B424E368A1`
+SHA256: `0F166DF5BAA43AC9BA713AB2560F1FBCDE51DDA2EB971930394F0FA7EA3E6E4D`
+
+**1.0.8** (2026-09-25): the `psql: FATAL: password authentication failed for user "postgres"`
+bug (thought fixed in 1.0.3) came back on a real device running 1.0.6. Root cause: 1.0.4's
+`--debugtrace`/`--debuglevel` flags, added to the Postgres installer call for diagnostics, were
+only ever confirmed against EDB's docs for their commercial EPAS product — never for the plain
+community PostgreSQL installer this script actually uses. Most likely explanation: those
+unrecognized flags, sitting right after `--superpassword` in the argument list, corrupted how
+the installer parsed that value. Removed. Also added real SHA256 verification for the Postgres
+installer download itself (there wasn't one before) — a corrupted/truncated download was
+another live possibility given how unreliable the connection to that server can be, confirmed
+on the same real device (severely throttled: ~350-500 kbps against a 74 Mbps connection, traced
+to that specific server/host, not the device or antivirus).
 
 **1.0.7** (2026-09-25): a freshly-provisioned machine's generated `.env` defaulted
 `VOICE_PUBLIC_URL` to `http://localhost:3100` — silently broken on every fresh install, since
@@ -43,7 +55,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.6` have been removed rather than kept for reference — use `1.0.7`.
+`1.0.0` through `1.0.7` have been removed rather than kept for reference — use `1.0.8`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
@@ -80,8 +92,6 @@ left over) before retrying, so it gets a genuinely fresh install.
 **1.0.2** (2026-09-24): fixed the "Set up this machine" button still not appearing after 1.0.1
 on a real second Windows 10 device — turned out to be a z-order/paint-over issue (a Dock.Fill
 status label sitting over it), not just a position issue.
-
-`1.0.0` through `1.0.5` have been removed rather than kept for reference — use `1.0.6`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
