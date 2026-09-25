@@ -27,22 +27,28 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.4.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.5.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.4.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.5.zip
 ```
-SHA256: `DD8251A84A052346A031722889DEAB4D0B4F15CA23CE7874A732644C7E24D33A`
+SHA256: `AC7BFE7626E5BE6B5EB9688EF7261DE24F9437D70C2BB15B37BBA1F1AADB6737`
+
+**1.0.5** (2026-09-25): fixed setup appearing to hang for over an hour on a real device,
+stuck downloading the ~350MB Postgres installer. Root cause: Windows PowerShell 5.1's
+`Invoke-WebRequest` renders a progress bar by default, and updating it per chunk has severe
+overhead on large files — a well-documented issue that can make a multi-hundred-MB download
+take dramatically longer than a normal browser download. `provision-machine.ps1` now sets
+`$ProgressPreference = "SilentlyContinue"` before any download.
 
 **1.0.4** (2026-09-24): the Postgres installer itself started failing with a bare "exited with
 code 1" on a third real device (1.0.3's password fix worked - this is a separate failure,
 further into the same step). EDB's installer doesn't say why on its own, so
 `provision-machine.ps1` now also passes `--debugtrace`/`--debuglevel 4` to get its own trace
 log written to `provision-logs\postgres-installer-<timestamp>.log` alongside the main
-transcript. This release doesn't claim to fix the exit-code-1 failure itself (root cause still
-unknown) — it exists to get real diagnostic detail if it happens again.
+transcript.
 
 **1.0.3** (2026-09-24): fixed `provision-machine.ps1`'s fresh-install path failing with
 `psql: FATAL: password authentication failed for user "postgres"` — the randomly generated
@@ -57,7 +63,7 @@ left over) before retrying, so it gets a genuinely fresh install.
 on a real second Windows 10 device — turned out to be a z-order/paint-over issue (a Dock.Fill
 status label sitting over it), not just a position issue.
 
-`1.0.0` through `1.0.3` have been removed rather than kept for reference — use `1.0.4`.
+`1.0.0` through `1.0.4` have been removed rather than kept for reference — use `1.0.5`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
