@@ -27,14 +27,23 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.5.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.6.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.5.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.6.zip
 ```
-SHA256: `AC7BFE7626E5BE6B5EB9688EF7261DE24F9437D70C2BB15B37BBA1F1AADB6737`
+SHA256: `8966D56218E6DAFFE08C3431B00E8A5420615C7A6A6DA4770B372F7121B29170`
+
+**1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
+status text, instead of a generic "check provision-logs" message pointing at a log file the
+person then had to go find and read. `provision-machine.ps1` writes a clean single-message
+`last-error.txt` next to its full transcript on any failure; `MainForm.cs` reads it
+(`MachineProvisioner.ReadLastError`) and shows it directly. Two explicit small fixes to stale
+partial downloads came along with this: `provision-machine.ps1` and `lib/install-app.ps1` now
+delete any leftover partial file before retrying a download, rather than relying on
+`Invoke-WebRequest`'s implicit overwrite.
 
 **1.0.5** (2026-09-25): fixed setup appearing to hang for over an hour on a real device,
 stuck downloading the ~350MB Postgres installer. Root cause: Windows PowerShell 5.1's
@@ -63,7 +72,7 @@ left over) before retrying, so it gets a genuinely fresh install.
 on a real second Windows 10 device — turned out to be a z-order/paint-over issue (a Dock.Fill
 status label sitting over it), not just a position issue.
 
-`1.0.0` through `1.0.4` have been removed rather than kept for reference — use `1.0.5`.
+`1.0.0` through `1.0.5` have been removed rather than kept for reference — use `1.0.6`.
 
 Unzip it anywhere and run `RestaurantLauncher.exe`.
 
