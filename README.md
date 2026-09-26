@@ -27,14 +27,22 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.13.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.14.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.13.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.14.zip
 ```
-SHA256: `FE6E1CF456A081180181CAFDCBA3AEEBB55589679721C6A26C2CA53E792C48F1`
+SHA256: `EAA2D03D85281453D5941841F0F4F37C327B23CC095D7453CF7AF54A988B98B7`
+
+**1.0.14** (2026-09-25): no more manual cleanup needed between retries. `provision-machine.ps1`
+now unconditionally removes its own dedicated PostgreSQL instance (exact major version, exact
+install directory, exact service name - never anything else on the machine) before every fresh
+install, via a new `Uninstall-OwnPostgres`, rather than requiring the person to uninstall it by
+hand in Settings between attempts. Safe specifically because of when this script ever runs at
+all - only when core services aren't registered yet - so no real restaurant data can exist in
+this instance regardless of how far a previous attempt got.
 
 **1.0.13** (2026-09-25): the password-auth failure came back yet again on a *fourth* real
 device, a genuinely clean one this time (only ever had PostgreSQL 16 on it, ruling out 1.0.12's
@@ -112,7 +120,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.12` have been removed rather than kept for reference — use `1.0.13`.
+`1.0.0` through `1.0.13` have been removed rather than kept for reference — use `1.0.14`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
