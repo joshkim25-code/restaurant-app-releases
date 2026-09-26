@@ -27,14 +27,26 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.11.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.12.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.11.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.12.zip
 ```
-SHA256: `D9E8F2840E000BB3C576CC7F38B47E1C77632D536BFE211FE1CB227E4F5A9B65`
+SHA256: `453F194D625F2E195E2D8A73B23E3CC44C10B94B444938FD427B37BB23AB5867`
+
+**1.0.12** (2026-09-25): 1.0.11's explicit password-reset never actually ran against the right
+instance. `Find-PgBin`/`Find-PgDataDir` searched `C:\Program Files\PostgreSQL` and picked
+whichever version directory sorted highest - with a leftover PostgreSQL 17 still present on the
+same real device (from an attempt before this script switched to installing 16), that always
+resolved to 17, not the 16 this script had just installed and actually needed to fix. The
+password reset was silently running against the wrong, unrelated instance every time. Also
+fixed the same-class bug in the post-install service lookup, which used a `postgresql-x64-*`
+wildcard that matches both coexisting services at once and would have passed an invalid,
+multi-name value to `Restart-Service`. Both now derive the exact target deterministically from
+`$PostgresVersion` (the version this script itself just installed), never searching or
+guessing among whatever else happens to be on the machine.
 
 **1.0.11** (2026-09-25): the `psql: FATAL: password authentication failed for user "postgres"`
 bug came back a *third* time on the same real device, this time on a genuinely fresh, isolated
@@ -89,7 +101,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.10` have been removed rather than kept for reference — use `1.0.11`.
+`1.0.0` through `1.0.11` have been removed rather than kept for reference — use `1.0.12`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
