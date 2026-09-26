@@ -27,14 +27,26 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.10.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.11.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.10.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.11.zip
 ```
-SHA256: `179766E6AFE09C6009EBA8488C578B8ADF824A545A04A4A06616F7A3FD00A373`
+SHA256: `D9E8F2840E000BB3C576CC7F38B47E1C77632D536BFE211FE1CB227E4F5A9B65`
+
+**1.0.11** (2026-09-25): the `psql: FATAL: password authentication failed for user "postgres"`
+bug came back a *third* time on the same real device, this time on a genuinely fresh, isolated
+PostgreSQL 16 install (1.0.10's fix) with no other explanation available - `--superpassword`
+has now proven unreliable across three separate real-machine failures for reasons that don't
+fully reduce to any single root cause. Rather than continuing to chase why, the installer's
+`--superpassword` is no longer trusted at all: after install, `provision-machine.ps1` now
+explicitly sets the superuser password itself via a standard, well-established Postgres
+recovery technique - temporarily allow passwordless ("trust") local connections in
+`pg_hba.conf`, use that to run a normal `ALTER USER ... WITH PASSWORD`, then restore
+`pg_hba.conf` exactly as it was. This works unconditionally, independent of whatever
+`--superpassword` does or doesn't do.
 
 **1.0.10** (2026-09-25): 1.0.9's dedicated-port fix (5433) wasn't the whole story on the same
 real device with an existing POS-owned PostgreSQL 17 install - the installer reported success
@@ -77,7 +89,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.9` have been removed rather than kept for reference — use `1.0.10`.
+`1.0.0` through `1.0.10` have been removed rather than kept for reference — use `1.0.11`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
