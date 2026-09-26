@@ -27,14 +27,25 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.12.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.13.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.12.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.13.zip
 ```
-SHA256: `453F194D625F2E195E2D8A73B23E3CC44C10B94B444938FD427B37BB23AB5867`
+SHA256: `FE6E1CF456A081180181CAFDCBA3AEEBB55589679721C6A26C2CA53E792C48F1`
+
+**1.0.13** (2026-09-25): the password-auth failure came back yet again on a *fourth* real
+device, a genuinely clean one this time (only ever had PostgreSQL 16 on it, ruling out 1.0.12's
+wrong-coexisting-instance bug). `Reset-PostgresSuperuserPassword` now verifies its own work
+immediately - reconnecting with the new password, retrying up to 5 times with a short delay -
+rather than trusting that the `ALTER USER` inside it "succeeded" and finding out from a
+downstream symptom later. Covers the case where the final restart (reverting `pg_hba.conf` back
+to requiring a password) genuinely needs longer than a few seconds to be ready on some
+machines; if the password still doesn't verify after 5 attempts, it now fails with a specific
+error naming this exact step, instead of the same generic `Ensure-AppDatabase` connection
+failure seen every time so far.
 
 **1.0.12** (2026-09-25): 1.0.11's explicit password-reset never actually ran against the right
 instance. `Find-PgBin`/`Find-PgDataDir` searched `C:\Program Files\PostgreSQL` and picked
@@ -101,7 +112,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.11` have been removed rather than kept for reference — use `1.0.12`.
+`1.0.0` through `1.0.12` have been removed rather than kept for reference — use `1.0.13`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
