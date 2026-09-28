@@ -27,14 +27,31 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.16.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.17.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.16.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.17.zip
 ```
-SHA256: `73175998F3DB0A783FFEF62B3F712161DBFAB821CD0A0017122C11BD2DE50F32`
+SHA256: `696909F93F3F38C4B655F66BC4B3C1B4E5DEA454E428A85D54E09729EAC36486`
+
+**1.0.17** (2026-09-28): found the actual, sole root cause behind every "password
+authentication failed" failure chased since 1.0.3 — confirmed directly by live-testing
+PowerShell's own behavior, not guessed. This script sets `$ErrorActionPreference = "Stop"`
+globally, and with a native command's stderr redirected via `2>&1` (used in every `psql` call
+this script makes), PowerShell 5.1 throws a *terminating* exception on the native command's
+very first stderr line — carrying that raw line as the exception message — regardless of the
+command's real exit code, and *before* `$LASTEXITCODE` is ever checked. Every retry/
+verification loop built across 1.0.11 through 1.0.16 (`Reset-PostgresSuperuserPassword`'s own
+check, then the shared `Wait-ForPostgresAuth`) was correctly written but never actually got to
+run past the very first failed attempt — the first failing psql call always threw straight out
+of the function, skipping the retry loop entirely. This is why the exact same raw, unwrapped
+`psql: FATAL: password authentication failed` error kept appearing on 1.0.16 despite it
+supposedly retrying 5 times. Fix: a new `Invoke-NativeAllowingStderr` wraps every `psql` call,
+temporarily relaxing `$ErrorActionPreference` to `"Continue"` around just that native call (the
+standard, documented fix for this exact PowerShell 5.1 behavior) so `$LASTEXITCODE` checks and
+retry loops actually run as written.
 
 **1.0.16** (2026-09-25): the password-auth failure showed up once more, but this time from
 `Ensure-AppDatabase`'s own connection, not `Reset-PostgresSuperuserPassword`'s (which now has
@@ -140,7 +157,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.15` have been removed rather than kept for reference — use `1.0.16`.
+`1.0.0` through `1.0.16` have been removed rather than kept for reference — use `1.0.17`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
