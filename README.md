@@ -27,14 +27,23 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.15.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.16.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.15.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.16.zip
 ```
-SHA256: `DC5590129716D14DA2CFB1426A51DD1B06794859B071095B0DBD1A5EBE6AA8B8`
+SHA256: `73175998F3DB0A783FFEF62B3F712161DBFAB821CD0A0017122C11BD2DE50F32`
+
+**1.0.16** (2026-09-25): the password-auth failure showed up once more, but this time from
+`Ensure-AppDatabase`'s own connection, not `Reset-PostgresSuperuserPassword`'s (which now has
+its own verification, and would show a different, specific error if it were the culprit) -
+meaning the reset likely verified fine, but the very next connection attempt moments later
+still failed once, a genuine transient/timing gap right at that boundary. The retry-with-delay
+logic from 1.0.13 is now shared (`Wait-ForPostgresAuth`) between both `Reset-
+PostgresSuperuserPassword`'s own check and `Ensure-AppDatabase`'s first connection, rather than
+assuming one successful check earlier means every later connection is automatically safe too.
 
 **1.0.15** (2026-09-25): fixed a fresh Windows machine failing setup with a generic
 `"The underlying connection was closed: An unexpected error occurred on a send."` - Windows
@@ -131,7 +140,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.14` have been removed rather than kept for reference — use `1.0.15`.
+`1.0.0` through `1.0.15` have been removed rather than kept for reference — use `1.0.16`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
