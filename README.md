@@ -27,14 +27,24 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.24.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.25.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.24.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.25.zip
 ```
-SHA256: `86B9D5E91A89301225094CB4686372E6B7FED42E7C36150D6716D97021D57000`
+SHA256: `7C510048760E79D4D7D2B0C2DEE74197D55FEB29AB589BB6086B9A90E29C0D4E`
+
+**1.0.25** (2026-09-28): following 1.0.24's fix, a real device that already had its core services
+registered and running from an earlier successful setup had its `.next-prod\BUILD_ID` deleted by
+hand (the documented recovery step) to force a clean rebuild - and `npm ci` failed with `EPERM`
+unlinking a native `.node` file, because the still-running `RestaurantApp` service had it loaded.
+This script only ever assumed a genuinely blank machine with no services registered yet; it never
+accounted for a hybrid state where services already exist but a rebuild is still needed. The
+rebuild path now stops any already-registered core services first (releasing file locks) before
+touching `node_modules`, and `Install-CoreService` now (re)starts a service even when it finds
+one already registered, instead of assuming "already registered" still means "currently running."
 
 **1.0.24** (2026-09-28): the actual root cause behind the entire "password stopped verifying
 after being set" mystery from 1.0.19-1.0.23, and separately a corrupted `DATABASE_URL` that broke
@@ -267,7 +277,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.23` have been removed rather than kept for reference — use `1.0.24`.
+`1.0.0` through `1.0.24` have been removed rather than kept for reference — use `1.0.25`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
