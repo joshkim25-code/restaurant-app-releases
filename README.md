@@ -27,14 +27,33 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.21.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.22.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.21.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.22.zip
 ```
-SHA256: `BB43F7AE499176C58A362084A9CB9229E772EEE5482A82439E010DD663A6122E`
+SHA256: `F36A86C7B9D2C0ECA2A500E631EAF3B2C8D4801A5EA539A5676D73EF4CC3F644`
+
+**1.0.22** (2026-09-28): 1.0.20's line-number diagnostic paid off immediately - the exact failing
+line came back: `$roleExists = (Invoke-Psql @(...) -join "").Trim()`, a genuinely new "You
+cannot call a method on a null-valued expression." Root cause, confirmed by direct testing in
+this environment: `(Func @(args) -join "")` does NOT apply `-join` to `Func`'s return value the
+way it visually appears to. Once the parser commits to command-invocation syntax (a bare
+function name as the first token inside the parens), every token after it - including `-join`
+and `""` - gets parsed as MORE ARGUMENTS to that function call, not as an operator applied
+afterward. `Invoke-Psql` doesn't read `$args`, so those extra tokens were always silently
+swallowed and `-join` never actually ran; the parens' value was always just `Invoke-Psql`'s own
+raw return value. This bug has existed since this line was first written and was completely
+invisible as long as `Invoke-Psql` happened to return a single non-null string (any real query
+match) - it only crashes on `.Trim()` when the query returns nothing at all, which is exactly
+what a `-tAc` role/database-existence check returns on a genuinely fresh install (the ordinary,
+common case, not an edge case). Both occurrences (`$roleExists`, `$dbExists`) now wrap the
+`Invoke-Psql` call in its own parens first - `((Invoke-Psql @(...)) -join "")` - forcing it to
+resolve to a value before `-join` (now unambiguously an operator) is applied. Verified directly:
+the broken pattern reproducibly throws the exact same error against a null-returning function,
+and the double-parens form fixes it.
 
 **1.0.21** (2026-09-28): the TLS fix from 1.0.15 came back on a real device - a fresh Postgres
 installer download failed with the same `"underlying connection was closed"` error even with
@@ -210,7 +229,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.20` have been removed rather than kept for reference — use `1.0.21`.
+`1.0.0` through `1.0.21` have been removed rather than kept for reference — use `1.0.22`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
