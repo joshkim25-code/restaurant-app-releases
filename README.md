@@ -27,14 +27,29 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.17.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.18.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.17.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.18.zip
 ```
-SHA256: `696909F93F3F38C4B655F66BC4B3C1B4E5DEA454E428A85D54E09729EAC36486`
+SHA256: `4DD63D79BA1CB43DEBC8C4E0BC99126C7EC90209C4A3A6DC91FF113A69AAD881`
+
+**1.0.18** (2026-09-28): 1.0.17's `Invoke-NativeAllowingStderr` fix worked exactly as intended —
+tested minutes later on a real device, setup now correctly reaches `Reset-
+PostgresSuperuserPassword`'s own retry loop and lets it finish (it self-verified successfully),
+but then failed with a *new, different, coded* error from `Ensure-AppDatabase`'s own connection
+check moments later: `"Could not connect as postgres with the password this script just set,
+even after 5 attempts."` That message itself was a dead end, though — it was a guess written
+before this script could ever see real psql error text (every previous attempt died to 1.0.16's
+underlying EAP bug before reaching this code path at all). `Wait-ForPostgresAuth` now captures
+and surfaces the *actual* psql output/exit code from the last failed attempt in both places that
+call it, instead of a generic "something is wrong" message, and its retry budget is raised from
+5 to 8 attempts as a reasonable safety margin now that retries are confirmed to genuinely run.
+If this exact error reappears, the new message will say what psql is actually reporting
+(connection refused vs. a real auth mismatch vs. something else) instead of requiring another
+guess-and-ship round.
 
 **1.0.17** (2026-09-28): found the actual, sole root cause behind every "password
 authentication failed" failure chased since 1.0.3 — confirmed directly by live-testing
@@ -157,7 +172,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.16` have been removed rather than kept for reference — use `1.0.17`.
+`1.0.0` through `1.0.17` have been removed rather than kept for reference — use `1.0.18`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
