@@ -27,14 +27,38 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.23.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.24.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.23.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.24.zip
 ```
-SHA256: `C85C6081E16F20E7AFBDC730E0BDF445F55B4A5FEC8F81CD94D07B410F6ED9C6`
+SHA256: `86B9D5E91A89301225094CB4686372E6B7FED42E7C36150D6716D97021D57000`
+
+**1.0.24** (2026-09-28): the actual root cause behind the entire "password stopped verifying
+after being set" mystery from 1.0.19-1.0.23, and separately a corrupted `DATABASE_URL` that broke
+login after a real device finally got all the way through setup. Confirmed by direct testing in
+this environment: when a function's result is captured (`$x = Some-Function`), PowerShell
+captures *every* object written to the success/output stream during that call - not just the
+value passed to `return`. Every `Write-Output "..."` progress message inside `Ensure-
+PostgresInstalled`, `Uninstall-OwnPostgres`, `Get-VerifiedRelease`, `Ensure-AppDatabase`, and
+`Get-LatestManifest` was silently becoming part of their captured return values
+(`$superPassword`, `$databaseUrl`, `$manifest`) - garbling `$superPassword` into a huge string of
+concatenated log messages plus the real password, and `$databaseUrl` into log messages plus the
+real connection string. This explains BOTH earlier mysteries at once: the password genuinely
+looked like it kept "reverting" because `Ensure-AppDatabase` was comparing a garbled password
+against a clean one Postgres actually had - the self-heal added in 1.0.19 "fixed" it only by
+resetting Postgres's real password to match the garbled value, which is also exactly how a
+garbled `DATABASE_URL` (containing the literal substring "data*base*") ended up in `.env`,
+producing Prisma's `"Can't reach database server at 'base'"` on login. Fix: every progress
+message in these functions now uses `Write-Host` instead, which bypasses the success stream
+entirely (still visible on screen and still captured by the transcript) and can never leak into
+a captured return value. Verified live: reproduced the exact corruption and confirmed the fix.
+**Existing installs with an already-built app need a clean re-run** - delete
+`C:\ProgramData\RestaurantApp\app\.next-prod\BUILD_ID` before retrying "Set up this machine", so
+setup regenerates `.env` with a correct `DATABASE_URL` instead of reusing the corrupted one (the
+`.next-prod\BUILD_ID` check is what makes it skip that step otherwise).
 
 **1.0.23** (2026-09-28): setup got further still on a real device - all the way to `prisma
 migrate deploy`, which failed with only `"prisma migrate deploy failed with exit code 1"` and no
@@ -243,7 +267,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.22` have been removed rather than kept for reference — use `1.0.23`.
+`1.0.0` through `1.0.23` have been removed rather than kept for reference — use `1.0.24`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
