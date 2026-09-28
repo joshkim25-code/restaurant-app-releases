@@ -27,14 +27,25 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.14.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.15.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.14.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.15.zip
 ```
-SHA256: `EAA2D03D85281453D5941841F0F4F37C327B23CC095D7453CF7AF54A988B98B7`
+SHA256: `DC5590129716D14DA2CFB1426A51DD1B06794859B071095B0DBD1A5EBE6AA8B8`
+
+**1.0.15** (2026-09-25): fixed a fresh Windows machine failing setup with a generic
+`"The underlying connection was closed: An unexpected error occurred on a send."` - Windows
+PowerShell 5.1's default enabled TLS protocol set can leave TLS 1.2 disabled even on an
+up-to-date Windows install, and every host this script talks to (nodejs.org,
+get.enterprisedb.com, raw.githubusercontent.com) requires it. `provision-machine.ps1` and
+`apply-update.ps1` now both force `[Net.ServicePointManager]::SecurityProtocol =
+[Net.SecurityProtocolType]::Tls12` before any web request. Every download/fetch also now
+includes the actual URL in its error message if it fails, instead of a bare, unhelpful .NET
+exception message with no indication of which of several requests this script makes was the
+one that failed.
 
 **1.0.14** (2026-09-25): no more manual cleanup needed between retries. `provision-machine.ps1`
 now unconditionally removes its own dedicated PostgreSQL instance (exact major version, exact
@@ -120,7 +131,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.13` have been removed rather than kept for reference — use `1.0.14`.
+`1.0.0` through `1.0.14` have been removed rather than kept for reference — use `1.0.15`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
