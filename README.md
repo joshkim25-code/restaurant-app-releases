@@ -27,14 +27,28 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.22.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.23.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.22.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.23.zip
 ```
-SHA256: `F36A86C7B9D2C0ECA2A500E631EAF3B2C8D4801A5EA539A5676D73EF4CC3F644`
+SHA256: `C85C6081E16F20E7AFBDC730E0BDF445F55B4A5FEC8F81CD94D07B410F6ED9C6`
+
+**1.0.23** (2026-09-28): setup got further still on a real device - all the way to `prisma
+migrate deploy`, which failed with only `"prisma migrate deploy failed with exit code 1"` and no
+indication of what prisma itself actually reported. This whole phase (npm ci, prisma generate,
+npm run build, prisma migrate deploy) had never run end-to-end on a real device before either,
+and every one of those calls only ever checked `$LASTEXITCODE`, discarding the command's real
+output entirely - the same diagnostic gap already fixed once for psql calls. `Invoke-
+NativeAllowingStderr` moved from `provision-machine.ps1` into the shared `lib/install-app.ps1`
+(dot-sourced by both `provision-machine.ps1` and `apply-update.ps1`), alongside a new
+`Invoke-CheckedCommand` helper that captures a native command's real output, streams it live to
+the transcript as before, and includes it in the thrown message on a non-zero exit. Applied to
+all four of `Install-AppDependencies`'s calls (`npm ci`, `prisma generate`, `npm run build`) plus
+both scripts' own `prisma migrate deploy` calls - so whatever prisma is actually reporting shows
+up directly in `last-error.txt` the next time this fails, instead of a bare exit code.
 
 **1.0.22** (2026-09-28): 1.0.20's line-number diagnostic paid off immediately - the exact failing
 line came back: `$roleExists = (Invoke-Psql @(...) -join "").Trim()`, a genuinely new "You
@@ -229,7 +243,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.21` have been removed rather than kept for reference — use `1.0.22`.
+`1.0.0` through `1.0.22` have been removed rather than kept for reference — use `1.0.23`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
