@@ -27,14 +27,25 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.19.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.20.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.19.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.20.zip
 ```
-SHA256: `5047CBE5D7A972264DDB17896C22AE84CA9878916443CFA62E0C7DC6D86F2386`
+SHA256: `66F68BCD7177B8CDA6C7AB627294BF130F6CCF7A2B421B44294A6FFC8F214C12`
+
+**1.0.20** (2026-09-28): 1.0.19 got further than any prior version ever has on a real device —
+far enough to hit `"You cannot call a method on a null-valued expression"`, a bare PowerShell
+runtime error with no indication of which line. This is genuinely uncharted territory: no real
+device has ever gotten past the password-auth step before, so the entire rest of the script
+(app fetch/build/migrate) had never actually been exercised end-to-end. Rather than guess which
+of several `.Method()` call sites is the culprit, the top-level error handler now appends the
+failing line number and the actual source line text (from `$_.InvocationInfo`) to
+`last-error.txt`, turning "something failed somewhere in this 600-line script" into an exact,
+actionable line the moment it happens next, instead of costing another real-device round trip
+just to find out where to even look.
 
 **1.0.19** (2026-09-28): 1.0.18's real-error surfacing paid off immediately — the *actual* psql
 text came back on the same real device: `FATAL: password authentication failed for user
@@ -186,7 +197,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.18` have been removed rather than kept for reference — use `1.0.19`.
+`1.0.0` through `1.0.19` have been removed rather than kept for reference — use `1.0.20`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
