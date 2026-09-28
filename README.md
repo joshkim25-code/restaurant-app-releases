@@ -27,14 +27,28 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.18.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.19.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.18.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.19.zip
 ```
-SHA256: `4DD63D79BA1CB43DEBC8C4E0BC99126C7EC90209C4A3A6DC91FF113A69AAD881`
+SHA256: `5047CBE5D7A972264DDB17896C22AE84CA9878916443CFA62E0C7DC6D86F2386`
+
+**1.0.19** (2026-09-28): 1.0.18's real-error surfacing paid off immediately — the *actual* psql
+text came back on the same real device: `FATAL: password authentication failed for user
+"postgres"`. That's a real, reproducible rejection, not a timing gap — reaching that exact error
+means the server was already up and pg_hba.conf was already asking for a password, and the
+password `Reset-PostgresSuperuserPassword`'s own check had just verified moments earlier was now
+being rejected. Something external changes the stored password in that window; EDB's Windows
+installer (a BitRock-style bootstrapper) is the leading suspect, since `-Wait` on its launcher
+process doesn't guarantee an async post-install child has actually finished touching the
+instance. Rather than chase down exactly which process does it, `Ensure-AppDatabase` now
+self-heals: if its first connection check fails, it re-runs the same unconditional,
+password-independent trust-mode reset used right after install (`Reset-
+PostgresSuperuserPassword`, now via a shared `Get-PgServiceName`) immediately before it actually
+needs the connection, rather than giving up on the first failure.
 
 **1.0.18** (2026-09-28): 1.0.17's `Invoke-NativeAllowingStderr` fix worked exactly as intended —
 tested minutes later on a real device, setup now correctly reaches `Reset-
@@ -172,7 +186,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.17` have been removed rather than kept for reference — use `1.0.18`.
+`1.0.0` through `1.0.18` have been removed rather than kept for reference — use `1.0.19`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
