@@ -27,14 +27,27 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.20.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.21.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.20.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.21.zip
 ```
-SHA256: `66F68BCD7177B8CDA6C7AB627294BF130F6CCF7A2B421B44294A6FFC8F214C12`
+SHA256: `BB43F7AE499176C58A362084A9CB9229E772EEE5482A82439E010DD663A6122E`
+
+**1.0.21** (2026-09-28): the TLS fix from 1.0.15 came back on a real device - a fresh Postgres
+installer download failed with the same `"underlying connection was closed"` error even with
+`SecurityProtocol` forced to TLS 1.2. Switched from a flat assignment (replace the whole enabled
+protocol set with only Tls12) to `-bor` (add Tls12 to whatever the OS already had enabled) in
+both `provision-machine.ps1` and `apply-update.ps1` - a flat assignment can strip out
+protocol/negotiation state some endpoints' handshake quirks still depend on even when TLS 1.2 is
+the one actually selected. Separately, `get.enterprisedb.com`'s installer download specifically
+has now shown three different flaky-network symptoms across independent real-device incidents
+(severe throttling in 1.0.8, TLS negotiation failure in 1.0.15, a mid-download connection reset
+here) - `Get-VerifiedRelease` (`lib/install-app.ps1`, shared by both scripts) now retries a
+failed download or checksum mismatch up to 3 times with a 5s delay before giving up, instead of
+failing outright on the first transient network hiccup.
 
 **1.0.20** (2026-09-28): 1.0.19 got further than any prior version ever has on a real device —
 far enough to hit `"You cannot call a method on a null-valued expression"`, a bare PowerShell
@@ -197,7 +210,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.19` have been removed rather than kept for reference — use `1.0.20`.
+`1.0.0` through `1.0.20` have been removed rather than kept for reference — use `1.0.21`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
