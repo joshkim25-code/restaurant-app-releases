@@ -27,14 +27,29 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.25.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.26.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.25.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.26.zip
 ```
-SHA256: `7C510048760E79D4D7D2B0C2DEE74197D55FEB29AB589BB6086B9A90E29C0D4E`
+SHA256: `526B3BBBEADC5A942995EB9323C778A48D96DB252807BF23E185BFE1150E9990`
+
+**1.0.26** (2026-09-28): a fresh install's `.env` no longer leaves `RESEND_API_KEY`,
+`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_PHONE_NUMBER`, or `ANTHROPIC_API_KEY` blank -
+none of these were ever things a non-technical restaurant owner could reasonably fill in by
+hand. Login-link email and Twilio phone numbers/SMS now proxy through the cloud-hosted voice
+service (same pattern already used for Stripe billing and cloud restore), so a brand-new
+restaurant owner gets working login emails immediately and can click one "Get a phone number"
+button in Settings, with no Resend or Twilio account of their own. `AGENT_TOKEN` (previously
+also left blank) now gets written into `.env` automatically the moment a restaurant is created,
+and the already-crash-looping print-agent service picks it up within a few seconds on its own.
+`ANTHROPIC_API_KEY`/`TWILIO_PHONE_NUMBER` are removed from the template entirely - confirmed
+dead, nothing local ever read either one. `New-FreshEnvFile`'s template is shorter and
+correspondingly simpler as a result. (This version doesn't change any provisioning *logic* -
+just what a fresh `.env` contains - so it doesn't need re-testing the same way 1.0.17-1.0.25
+did.)
 
 **1.0.25** (2026-09-28): following 1.0.24's fix, a real device that already had its core services
 registered and running from an earlier successful setup had its `.next-prod\BUILD_ID` deleted by
@@ -277,7 +292,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.24` have been removed rather than kept for reference — use `1.0.25`.
+`1.0.0` through `1.0.25` have been removed rather than kept for reference — use `1.0.26`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
