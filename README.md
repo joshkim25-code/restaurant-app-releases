@@ -27,14 +27,30 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.26.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.27.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.26.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.27.zip
 ```
-SHA256: `526B3BBBEADC5A942995EB9323C778A48D96DB252807BF23E185BFE1150E9990`
+SHA256: `4066809C1CAE332254807F770D26E0C6D4F83E3D2D5666DBF0A0FF6E1DD26550`
+
+**1.0.27** (2026-09-29): a real device hit `Application error ... Digest: 653103452` right after
+"add your email" on the login page - the real error, only visible in `app.log`, was Prisma
+`P1000`: `"Authentication failed against the database server, the provided database credentials
+for restaurant are not valid"`. Root cause in `Ensure-AppDatabase`: it generates a brand-new
+random `$appPassword` on *every* run, but only ever applied it to Postgres in the `CREATE ROLE`
+branch - if the `restaurant` role already existed (exactly what happens re-running "Set up this
+machine" on a device that was provisioned before, which is how this device had been tested all
+along this release cycle), the code just logged "already exists" and skipped setting a password,
+while still writing that unused new password into `.env`'s `DATABASE_URL` a few lines later. Any
+second "Set up this machine" run on the same machine was therefore guaranteed to write a
+`DATABASE_URL` Postgres would reject. Fixed: the role's password is now set unconditionally
+(`ALTER ROLE ... WITH PASSWORD` when it already exists, `CREATE ROLE ... PASSWORD` when it
+doesn't), so `.env`'s password always matches what Postgres actually has, regardless of whether
+this is a genuinely fresh machine or a repeat run. **A device already hit by this** just needs
+"Set up this machine" run again with this version - no manual Postgres cleanup needed.
 
 **1.0.26** (2026-09-28): a fresh install's `.env` no longer leaves `RESEND_API_KEY`,
 `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_PHONE_NUMBER`, or `ANTHROPIC_API_KEY` blank -
@@ -292,7 +308,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.25` have been removed rather than kept for reference — use `1.0.26`.
+`1.0.0` through `1.0.26` have been removed rather than kept for reference — use `1.0.27`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
