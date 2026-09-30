@@ -27,14 +27,27 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.30.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.31.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.30.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.31.zip
 ```
-SHA256: `801FD31666627B8EBFCAA9920AEBB32E2A8A53373F0FEDB72FDAA8E8A0163779`
+SHA256: `E8DDCDC685FD7F53284D679EA2B571BFEBBE40A68A97EE90946279EF10122917`
+
+**1.0.31** (2026-09-30): 1.0.30's retry logic didn't help - the exact same `"Access to the path
+... is denied"` error recurred on every one of 5 retries over ~10s, proving this wasn't a brief
+timing gap. Diagnosed directly on the real device: `Get-Process node` showed **two live node.exe
+processes still running** at the exact moment all three core services reported `Stopped` to SCM.
+NSSM had already told the Service Control Manager the service was stopped before its child
+process had actually exited - a service-status check alone can't be trusted here, no matter how
+long you wait or retry. Fixed with a new `Stop-LingeringProcessesUnder` helper
+(`lib/install-app.ps1`): after services report stopped, it finds any `node.exe` whose command
+line still references the install directory (via `Get-CimInstance Win32_Process`) and
+force-kills it directly - a hard guarantee instead of an inference from service state. Applied to
+both `apply-update.ps1` (where this was reproduced) and `provision-machine.ps1`'s equivalent
+stop-before-touching-files step, since it's the same class of risk.
 
 **1.0.30** (2026-09-30): 1.0.29 got further - past the nssm bug, all the way to actually stopping
 services and starting the file swap - then failed with `"Access to the path
@@ -367,7 +380,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.29` have been removed rather than kept for reference — use `1.0.30`.
+`1.0.0` through `1.0.30` have been removed rather than kept for reference — use `1.0.31`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
