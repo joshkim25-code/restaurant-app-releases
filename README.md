@@ -27,14 +27,33 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.28.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.29.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.28.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.29.zip
 ```
-SHA256: `642865451433E94BF0D5A6BB996718E711E333C57BDF3DBD2D4618E1E764D668`
+SHA256: `54DCC3041F7897082CA60B8D61563D5D4CC86C7251C4B37113ADE7CA97AD5CC2`
+
+**1.0.29** (2026-09-30): two more real-device bugs found chasing 1.0.28 to completion. (1)
+`apply-update.ps1` crashed instantly with `"nssm.exe not found - install it first: winget
+install..."` - unlike `provision-machine.ps1`, it never passed a `-BundledPath` to `Find-Nssm`,
+so it only ever found nssm via a prior WinGet install or PATH, neither of which exists on a
+machine that only ever got nssm through the launcher's own bundled `tools\nssm.exe`. Every real
+restaurant's machine is in exactly that position - this would have broken literally every first
+app update, on every machine, always, the first time any app update ever shipped (which, until
+this version, had never actually happened - see the app's own 1.2.0 release notes). Fixed: passes
+the same bundled path `provision-machine.ps1` already does. (2) After 1.0.28's DATABASE_URL fix
+correctly got auth working again, the very next error was Prisma `P2021`: `"The table
+public.LoginToken does not exist"` - `Ensure-PostgresInstalled` wipes and recreates the *entire*
+Postgres instance, schema included, on every run, but `prisma migrate deploy` only ever ran
+inside the "app not yet built" branch; a repeat "Set up this machine" run on a device with an
+already-built app (this device, again) skipped it entirely, leaving a database that correctly
+authenticates but has zero tables. Fixed: migration now runs unconditionally after the
+fetch/build branch, not inside it. **A device already hit by either of these** just needs "Set up
+this machine" run again (fixes the schema) and then the normal update-check to complete (now that
+NSSM resolves, it'll pull the app's actual 1.2.0 release with the password-login UI).
 
 **1.0.28** (2026-09-30): the exact same `Digest: 653103452` error came back on the same device
 running 1.0.27, proving that fix incomplete. Traced further this time: `Ensure-PostgresInstalled`
@@ -333,7 +352,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.27` have been removed rather than kept for reference — use `1.0.28`.
+`1.0.0` through `1.0.28` have been removed rather than kept for reference — use `1.0.29`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
