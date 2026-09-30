@@ -27,14 +27,39 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.27.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.28.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.27.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.28.zip
 ```
-SHA256: `4066809C1CAE332254807F770D26E0C6D4F83E3D2D5666DBF0A0FF6E1DD26550`
+SHA256: `642865451433E94BF0D5A6BB996718E711E333C57BDF3DBD2D4618E1E764D668`
+
+**1.0.28** (2026-09-30): the exact same `Digest: 653103452` error came back on the same device
+running 1.0.27, proving that fix incomplete. Traced further this time: `Ensure-PostgresInstalled`
+unconditionally uninstalls and reinstalls this script's own dedicated Postgres instance on
+*every* run (not just a genuinely fresh one - confirmed by reading `Uninstall-OwnPostgres`'s own
+call site, always called first, no "already installed, skip" guard exists at all), so
+`Ensure-AppDatabase`'s returned `$databaseUrl` is *always* a brand-new value, on every single
+run - 1.0.27's fix (ALTERing the role's password when it already existed) never even gets
+reached in practice, since the role never survives the Postgres wipe that happens first. The
+actual gap: the main script only ever wrote that fresh `$databaseUrl` into `.env` inside the
+"app not yet built" branch (`New-FreshEnvFile`) - re-running "Set up this machine" on a device
+that already had a built app (`BUILD_ID` present, e.g. because services were removed for
+re-testing but the app itself was left in place) skipped that branch entirely, leaving `.env`'s
+`DATABASE_URL` pointing at a role Postgres no longer has. Fixed properly this time: a new shared
+`Set-EnvFileVar` helper (`lib/install-app.ps1`, mirrors `src/lib/localEnv.ts`'s single-line
+patch exactly) now corrects just the `DATABASE_URL` line in an already-existing `.env`
+unconditionally, on every run, regardless of which branch runs next - preserving `AGENT_TOKEN`
+and everything else already in it, unlike regenerating the whole file. The "stop core services
+before touching anything" step (previously only in the rebuild branch) moved earlier and now
+runs unconditionally too, so a DATABASE_URL correction is never applied underneath an
+already-running process - `Install-CoreService` further down (re)starts everything with the
+corrected `.env` regardless of which branch ran. Verified directly in this environment: a unit
+test of `Set-EnvFileVar` confirms it replaces the line in place, is a no-op when already correct,
+and appends when the key is missing, without disturbing any other line. **A device already hit
+by this** just needs "Set up this machine" run again with this version.
 
 **1.0.27** (2026-09-29): a real device hit `Application error ... Digest: 653103452` right after
 "add your email" on the login page - the real error, only visible in `app.log`, was Prisma
@@ -308,7 +333,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.26` have been removed rather than kept for reference — use `1.0.27`.
+`1.0.0` through `1.0.27` have been removed rather than kept for reference — use `1.0.28`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
