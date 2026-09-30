@@ -27,14 +27,29 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.29.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.30.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.29.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.30.zip
 ```
-SHA256: `54DCC3041F7897082CA60B8D61563D5D4CC86C7251C4B37113ADE7CA97AD5CC2`
+SHA256: `801FD31666627B8EBFCAA9920AEBB32E2A8A53373F0FEDB72FDAA8E8A0163779`
+
+**1.0.30** (2026-09-30): 1.0.29 got further - past the nssm bug, all the way to actually stopping
+services and starting the file swap - then failed with `"Access to the path
+'C:\ProgramData\RestaurantApp\app' is denied"` on `Rename-Item`, immediately after `nssm stop`
+reported all three core services stopped. Same class of bug as the EPERM fix already shipped once
+in `provision-machine.ps1`'s rebuild path: a brief residual OS-level file handle (process exit
+cleanup, a moment of antivirus real-time scanning right after) can outlast the service itself
+reporting stopped, and `apply-update.ps1` only ever waited a flat, unverified 1 second before
+touching the directory. Fixed with two new shared helpers in `lib/install-app.ps1`:
+`Wait-ForServicesStopped` (polls actual service status instead of a blind sleep) and
+`Invoke-WithRetry` (retries a failing operation a few times with a short delay, same reasoning as
+`Get-VerifiedRelease`'s existing download retries - unit-tested directly in this environment for
+both the eventual-success and exhausts-and-rethrows cases). Applied to every directory
+rename/remove in `apply-update.ps1`'s main flow and both of its rollback paths, not just the one
+that happened to fail first.
 
 **1.0.29** (2026-09-30): two more real-device bugs found chasing 1.0.28 to completion. (1)
 `apply-update.ps1` crashed instantly with `"nssm.exe not found - install it first: winget
@@ -352,7 +367,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.28` have been removed rather than kept for reference — use `1.0.29`.
+`1.0.0` through `1.0.29` have been removed rather than kept for reference — use `1.0.30`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
