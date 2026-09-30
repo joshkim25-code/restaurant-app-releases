@@ -27,14 +27,34 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.32.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.33.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.32.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.33.zip
 ```
-SHA256: `722304B4579FBE22C21C9A338AB1E12CC2E1E21315F72ADEC777627A08EAD03F`
+SHA256: `625A638A59E95DD1EF0076A76527FCA78E165CEA3816E69E47367832CA00E62C`
+
+**1.0.33** (2026-09-30): the exact same `"Access to the path ... is denied"` kept recurring even
+past 1.0.32's process-tree kill. Root cause: `Get-ServiceProcessTreeIds`/`Stop-ProcessIdsIfAlive`
+only ever see descendants of a service's *current* live process - they're blind to orphans left
+over from an *earlier* failed attempt on the same device, which are already disconnected from any
+currently-running service's ancestry by the time a new attempt even starts (their original
+`nssm.exe` parent exited attempts ago). These accumulate silently across repeated retries on the
+same real device - exactly the situation this one has been in through several rounds of testing.
+New `Stop-ProcessesUsingPath` (`lib/install-app.ps1`) is a completely different, ancestry-
+independent detector: for every `node`/`cmd`/`npm` process on the whole machine, it inspects the
+process's actually-loaded modules (every `.node`/`.dll`/`.js` file a running process has open
+shows up here, e.g. compiled output under `.next-prod` or a `node_modules` native binding) for
+anything under the install directory - true regardless of process ancestry, service state, or
+which attempt originally spawned it, with a command-line check as a fallback if module inspection
+itself fails. Smoke-tested directly in this environment (runs cleanly against real processes,
+matches nothing for a non-matching path). Applied alongside (not instead of) 1.0.32's tree-based
+kill in both `apply-update.ps1` and `provision-machine.ps1`. **If a device is already stuck with
+accumulated orphans from testing 1.0.30-1.0.32**, a reboot clears them immediately and
+unconditionally - this version prevents them from accumulating going forward, but doesn't retroactively
+clean up ones from before it was installed.
 
 **1.0.32** (2026-09-30): 1.0.31's fix never fired at all - a real handle search (Process
 Explorer/Resource Monitor, run directly against the stuck folder on a real device) showed exactly
@@ -398,7 +418,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.31` have been removed rather than kept for reference — use `1.0.32`.
+`1.0.0` through `1.0.32` have been removed rather than kept for reference — use `1.0.33`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
