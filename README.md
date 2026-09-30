@@ -27,14 +27,32 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.31.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.32.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.31.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.32.zip
 ```
-SHA256: `E8DDCDC685FD7F53284D679EA2B571BFEBBE40A68A97EE90946279EF10122917`
+SHA256: `722304B4579FBE22C21C9A338AB1E12CC2E1E21315F72ADEC777627A08EAD03F`
+
+**1.0.32** (2026-09-30): 1.0.31's fix never fired at all - a real handle search (Process
+Explorer/Resource Monitor, run directly against the stuck folder on a real device) showed exactly
+why: `app.log` was held open by two `cmd.exe` processes, two `node.exe` processes, and `nssm.exe`
+- a real process **tree** (`nssm -> cmd.exe` (npm.cmd needs a shell host) `-> node.exe` (npm's own
+CLI) `-> node.exe` (the actual `next start` server)), not a single lingering process. 1.0.31's
+fix matched `node.exe` processes by command-line substring, but an orphaned grandchild's own
+command line often never mentions the install directory as text at all - only its process
+ancestry does, and that ancestry breaks the instant `nssm.exe` itself exits (Windows doesn't
+retroactively repoint a live process's `ParentProcessId`). Real fix: two new helpers in
+`lib/install-app.ps1` - `Get-ServiceProcessTreeIds` walks the real process tree by
+`ParentProcessId`, but has to run **before** anything is stopped (verified with a unit test of
+the traversal against the exact 4-level chain this device showed), and `Stop-ProcessIdsIfAlive`
+kills survivors by that pre-recorded PID list afterward, independent of whatever ancestry is left
+once nssm's own process is gone. Also surfaced separately: the same handle search showed
+`explorer.exe` had the folder itself open (a File Explorer window) - not something a script
+should ever force-close on someone's desktop. The rename failure message now explicitly suggests
+checking for that instead of a bare "Access is denied".
 
 **1.0.31** (2026-09-30): 1.0.30's retry logic didn't help - the exact same `"Access to the path
 ... is denied"` error recurred on every one of 5 retries over ~10s, proving this wasn't a brief
@@ -380,7 +398,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.30` have been removed rather than kept for reference — use `1.0.31`.
+`1.0.0` through `1.0.31` have been removed rather than kept for reference — use `1.0.32`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
