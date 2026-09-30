@@ -27,14 +27,33 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.34.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.35.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.34.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.35.zip
 ```
-SHA256: `92B0EF18F70A28F750B26DF4486F1591D6F9C571471EB4CA257C9E3FDC49C3BE`
+SHA256: `0636254815FBEED742D770C769732D4BEE4143211C68C7CC0C3289B3E71C5A2C`
+
+**1.0.35** (2026-09-30): a real safety gap, found and closed before ever being exercised on a real
+device - raised by the user asking "what if a restaurant's existing POS system's own PostgreSQL
+happens to be version 16 too?" before deploying to a real restaurant machine for the first time.
+Traced through `Uninstall-OwnPostgres`: it only ever identified "safe to delete" by major-version
+folder path (`C:\Program Files\PostgreSQL\16`) - EDB's installer always uses that exact same
+default folder regardless of port, so a completely unrelated PostgreSQL 16 install (a POS
+system's own, coincidentally the same major version) would sit at that identical path and get
+silently uninstalled and deleted. The port-isolation (this app always uses 5433, chosen
+specifically to avoid colliding with anything on Postgres's default 5432) only ever protected how
+this app *connects* - it did nothing to protect what gets *deleted*. Fixed: before touching
+anything, reads the found install's actual configured port from `postgresql.conf` (an explicit,
+active `port = ...` line if this script itself created it - always writes one via
+`--serverport`) - a commented-out or missing port line means Postgres's own default, 5432,
+applies. If the detected port isn't this app's own 5433, the script now refuses outright with a
+clear error instead of deleting anything, rather than assuming any version-16 folder must be its
+own. Unit-tested directly in this environment against three realistic `postgresql.conf` shapes:
+a commented-out default, this script's own explicit 5433, and a foreign explicit custom port -
+all three detected correctly.
 
 **1.0.34** (2026-09-30): `provision-machine.ps1` crashed outright with `"Cannot bind argument to
 parameter 'ProcessIds' because it is null"` on a real device re-running "Set up this machine"
@@ -433,7 +452,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.33` have been removed rather than kept for reference — use `1.0.34`.
+`1.0.0` through `1.0.34` have been removed rather than kept for reference — use `1.0.35`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
