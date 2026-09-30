@@ -27,14 +27,29 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.33.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.34.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.33.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.34.zip
 ```
-SHA256: `625A638A59E95DD1EF0076A76527FCA78E165CEA3816E69E47367832CA00E62C`
+SHA256: `92B0EF18F70A28F750B26DF4486F1591D6F9C571471EB4CA257C9E3FDC49C3BE`
+
+**1.0.34** (2026-09-30): `provision-machine.ps1` crashed outright with `"Cannot bind argument to
+parameter 'ProcessIds' because it is null"` on a real device re-running "Set up this machine"
+right after manually removing all three services (exactly the documented recovery step) - a
+classic PowerShell gotcha, confirmed by direct reproduction in this environment:
+`Get-ServiceProcessTreeIds` finds none of the (just-deleted) service names, so its internal `$ids`
+list stays a genuinely empty (but non-null) collection - yet `return $ids` still handed the
+caller a bare `$null`, because PowerShell unrolls a returned collection onto the output stream
+one item at a time, and an empty collection contributes zero items to unroll. `Stop-
+ProcessIdsIfAlive`'s `-ProcessIds` was `Mandatory`, so `$null` was rejected outright. Fixed with
+the standard idiom: `return ,$ids` (unary comma forces it to be returned as a single array-like
+object instead of unrolled), plus `Stop-ProcessIdsIfAlive` no longer requires a non-null
+argument and just no-ops on `$null`/empty - defense in depth, not just the one call site.
+Verified directly in this environment against the exact failing scenario (service names that
+don't exist).
 
 **1.0.33** (2026-09-30): the exact same `"Access to the path ... is denied"` kept recurring even
 past 1.0.32's process-tree kill. Root cause: `Get-ServiceProcessTreeIds`/`Stop-ProcessIdsIfAlive`
@@ -418,7 +433,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.32` have been removed rather than kept for reference — use `1.0.33`.
+`1.0.0` through `1.0.33` have been removed rather than kept for reference — use `1.0.34`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
