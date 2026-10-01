@@ -1,8 +1,8 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "releasedAt": "2026-10-01",
-  "notes": "Fixed: restoring an existing restaurant onto a new device left the print agent crash-looping - the agent connection token now gets written to .env automatically during restore, not just the database.",
-  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.2.1.zip",
-  "sha256": "91E4328CC352C4B4EEA205DCF9B53219B01B8F903965D524B116428079A80533",
+  "notes": "Fixed: cancelling a takeaway order threw a 404 right after - the cancel itself always worked, now it lands you back somewhere sensible instead.",
+  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.2.2.zip",
+  "sha256": "793CBC8822DC9F372228599623E09E22F928AC9CE3FFA849276AD758E99CDDC6",
   "minLauncherVersion": "1.0.0"
 }
