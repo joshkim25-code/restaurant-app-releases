@@ -27,14 +27,33 @@ compares `version` against the currently installed app's own `package.json` vers
 
 ## Downloading the launcher
 
-**`launcher/RestaurantAppLauncher-1.0.35.zip`** — the launcher itself (`RestaurantLauncher.exe`
+**`launcher/RestaurantAppLauncher-1.0.36.zip`** — the launcher itself (`RestaurantLauncher.exe`
 plus its `scripts/` and `tools/` folders, which it needs alongside it to work). Direct
 download:
 
 ```
-https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.35.zip
+https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/launcher/RestaurantAppLauncher-1.0.36.zip
 ```
-SHA256: `0636254815FBEED742D770C769732D4BEE4143211C68C7CC0C3289B3E71C5A2C`
+SHA256: `C36A09BC807705819F353636007FB7B1F5F418E0C6C1E20A4CCCC0488ED82971`
+
+**1.0.36** (2026-10-01): a real device's "Set up this machine" got stuck indefinitely on
+`"Downloading release from ..."` - confirmed, via direct testing on that device, that none of
+`Invoke-WebRequest`'s three download call sites (the Node.js installer, the release manifest,
+`Get-VerifiedRelease`'s own download - used for both the Postgres installer and the app zip) had
+any timeout at all. A connection that hangs rather than fails outright (confirmed real: an
+isolated `Invoke-WebRequest` to the exact same URL, run fresh on the same device, completed in
+seconds - yet the script's own call to the identical URL hung indefinitely on multiple separate
+attempts, surviving a full process kill and fresh re-extraction) left the whole setup process
+stuck forever with zero error message, and `Get-VerifiedRelease`'s existing retry logic
+(`MaxAttempts`/`DelaySeconds`) could never even trigger, since nothing ever failed - it just never
+returned. Fixed: `-TimeoutSec` added to all three call sites, sized per download (30s for the tiny
+manifest, 600s for the Node.js installer, 1800s - sized generously after an earlier real device
+showed a legitimately slow-but-working 0.6 Mbps connection - for the Postgres installer, 300s
+default for `Get-VerifiedRelease`'s smaller caller, the app release zip). This doesn't
+necessarily fix whatever is actually causing that specific device's connection to hang - it turns
+an infinite silent hang into a bounded failure with a real, readable error message in
+`last-error.txt`, which is what's actually needed to diagnose the underlying cause rather than
+continuing to guess blind.
 
 **1.0.35** (2026-09-30): a real safety gap, found and closed before ever being exercised on a real
 device - raised by the user asking "what if a restaurant's existing POS system's own PostgreSQL
@@ -452,7 +471,7 @@ new auto-restore-on-login both depend on this being correct. `provision-machine.
 in the real production URL (a public HTTPS endpoint, not a credential — safe to include, unlike
 `CLOUD_DATABASE_URL`, which stays blank).
 
-`1.0.0` through `1.0.34` have been removed rather than kept for reference — use `1.0.35`.
+`1.0.0` through `1.0.35` have been removed rather than kept for reference — use `1.0.36`.
 
 **1.0.6** (2026-09-25): setup failures now show the real reason directly in the launcher's own
 status text, instead of a generic "check provision-logs" message pointing at a log file the
