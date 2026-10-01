@@ -1,8 +1,8 @@
 {
-  "version": "1.2.0",
-  "releasedAt": "2026-09-30",
-  "notes": "Login is now email+password with automatic cloud restore on a new machine. Print-agent tokens, login emails, and Twilio phone numbers/SMS are now all provisioned automatically - no Resend or Twilio account needed per restaurant.",
-  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.2.0.zip",
-  "sha256": "D824C4653E04DC42400A17FBA8508B74CC6558BF398DE76A951455E8CE82D726",
+  "version": "1.2.1",
+  "releasedAt": "2026-10-01",
+  "notes": "Fixed: restoring an existing restaurant onto a new device left the print agent crash-looping - the agent connection token now gets written to .env automatically during restore, not just the database.",
+  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.2.1.zip",
+  "sha256": "91E4328CC352C4B4EEA205DCF9B53219B01B8F903965D524B116428079A80533",
   "minLauncherVersion": "1.0.0"
 }
