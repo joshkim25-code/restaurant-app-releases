@@ -1,8 +1,8 @@
 {
-  "version": "1.2.2",
-  "releasedAt": "2026-10-01",
-  "notes": "Fixed: cancelling a takeaway order threw a 404 right after - the cancel itself always worked, now it lands you back somewhere sensible instead.",
-  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.2.2.zip",
-  "sha256": "793CBC8822DC9F372228599623E09E22F928AC9CE3FFA849276AD758E99CDDC6",
+  "version": "1.3.0",
+  "releasedAt": "2026-10-02",
+  "notes": "The waiter order screen no longer uses a collapsing menu - categories are always visible, with items shown as a grid of tappable boxes. Menu categories can now be colour-tinted from Settings > Menu to make them easier to tell apart at a glance.",
+  "downloadUrl": "https://raw.githubusercontent.com/joshkim25-code/restaurant-app-releases/main/releases/restaurant-app-1.3.0.zip",
+  "sha256": "DA105F25786921875694DBD2CDE31C365B7C518C63D8B6D1D1FC6C08EE3C3A74",
   "minLauncherVersion": "1.0.0"
 }
